@@ -2,19 +2,25 @@ package main // import "webdav-server"
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
 	"os"
+	"time"
 
 	"golang.org/x/net/webdav"
 )
 
 func main() {
 	arg := os.Args[1:]
+	rand.Seed(time.Now().UnixNano())
 	if len(arg) == 2 {
+		salt := RandStringRunes(8)
+		fmt.Println(string(salt))
 		os.Mkdir("./storage", 0777)
 		storagePath := "./storage"
 
 		srv := &webdav.Handler{
+			Prefix:     "/" + salt,
 			FileSystem: webdav.Dir(storagePath),
 			LockSystem: webdav.NewMemLS(),
 			Logger: func(r *http.Request, err error) {
@@ -26,7 +32,7 @@ func main() {
 
 		mux := http.NewServeMux()
 		// Trailing slash must be inputed to end of path in http.HandleFunc
-		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		mux.HandleFunc("/"+salt+"/", func(w http.ResponseWriter, r *http.Request) {
 			username, password, _ := r.BasicAuth()
 
 			// Check credential
