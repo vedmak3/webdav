@@ -2,6 +2,7 @@ package main // import "webdav-server"
 
 import (
 	"fmt"
+	"log"
 	"math/rand"
 	"net/http"
 	"os"
@@ -10,6 +11,10 @@ import (
 	"golang.org/x/net/webdav"
 )
 
+func init() {
+	log.SetPrefix("LOG: ")
+	log.SetFlags(log.Ldate | log.Ltime | log.Llongfile)
+}
 func main() {
 	arg := os.Args[1:]
 	rand.Seed(time.Now().UnixNano())
@@ -32,6 +37,9 @@ func main() {
 
 		mux := http.NewServeMux()
 		// Trailing slash must be inputed to end of path in http.HandleFunc
+		mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+			log.Println(r)
+		})
 		mux.HandleFunc("/"+salt+"/", func(w http.ResponseWriter, r *http.Request) {
 			username, password, _ := r.BasicAuth()
 
